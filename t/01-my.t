@@ -1,7 +1,8 @@
 use lib 'lib';
 use Slang::Nogil;
-use test-util;
 use Test;
+
+plan 4;
 
 my $a = 11;
 is $a, 11, 'Yes sigil, Yes my';
@@ -14,29 +15,14 @@ is a, 12, 'No sigil, Yes my';
 $b = 13;
 is $b, 13, 'Yes sigil, No my';
 
-# TODO remove the my
-my c = 14;
-is c, 14, 'No sigil, No my';
+my €europe = 14;
+is €europe, 14, 'European (€) sigil';
 
-sub fct(Str param) {
-    return param ~ 'fctfy';
-}
-is fct('arg'), 'argfctfy', 'No sigil: function parameters';
+# TODO remove the nomy
+#nomy c = 14;
+#is c, 14, 'No sigil, No my';
 
-# use MONKEY
-augment class Int {
-    method is-answer { self == 42 }
-}
-ok 42.is-answer, 'Use monkey: can augment';
+#print = 15;
 
-# use lib t/lib
-is from-test-util, 'from test-util', 'Use lib t/lib';
-# use experimental :macros :pack :cached
-#my $called;
-#macro called() {
-#    $called++;
-#    quasi { "Called" }
-#};
-#say called() ~ " $called times";
-#say called() ~ " $called times";
 
+done-testing;

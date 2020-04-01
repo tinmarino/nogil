@@ -1,0 +1,19 @@
+{
+    "perl" : "6.*",
+    "name" : "Slang::Nogil",
+    "api"  : "1",
+    "auth" : "github:tinmarino",
+    "version" : "0.0.01",
+    "description" : "Si - No - Si - gil",
+    "authors" : [ "Tinmarino" ],
+    "license" : "Artistic-2.0",
+    "provides" : {
+        "Vortex::TotalPerspective" : "lib/Slang/Nogil.rakumod"
+    },
+    "depends" : [ ],
+    "build-depends" : [ ],
+    "test-depends" : [ ],
+    "resources" : [ ],
+    "tags": [ "Slang", "Grammar" ],
+    "source-url" : "git://github.com/tinmarino/nogil.git"
+}
