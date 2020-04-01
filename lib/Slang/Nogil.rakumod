@@ -13,7 +13,12 @@ sub get-stack {
 
 sub by-variable() {
     # 1me 2sigil 3varaible 4term:sym<variable> 5term <- variable in EXPR or declarator
-    my $res = so(get-stack() ∩ ('variable', 'param_var'));
+    my $stack = get-stack;
+    my $res = so($stack ∩ ('variable', 'param_var'));
+    $res = $res && 'desigilname' ∉ $stack;
+    $res = $res && 'special_variable' ∉ $stack;
+    #$res = $res && 'term:sym<variable>' ∉ $stack;
+    log "Variable: ", $res, " <- ", $stack;
     return so($res);
 }
 
@@ -24,7 +29,8 @@ sub by-parameter {
     my $stack = get-stack;
     my $res = 'parameter' ∈ $stack;
     $res = $res && 'typename' ∉ $stack;
-    log $res, " <- ", $stack;
+    #$res = $res || 'term:sym<name>' ∈ $stack;
+    log "Parameter: ", $res, " <- ", $stack;
     return $res;
 }
 
@@ -37,40 +43,18 @@ my $main-actions = $*LANG.slang_actions('MAIN');
 role Nogil::NogilGrammar {
     token sigil {
         | <[$@%&]>
-        | <?{ by-variable }> <nogil>
+        | <?{ by-variable }> <nogil> {}
     }
 
     token nogil {
         | '€'
         | <?>
-        {log "No sigil $/"; } }
+        {log "No sigil:", get-stack; }
+    }
 
     token longname {
         # Restrict longname in parameter: removing the 'just a longname error'
         <name> <!{ by-parameter }> [ <?before ':' <.+alpha+[\< \[ \« ]>> <!RESTRICTED> <colonpair> ]*
-    }
-        #token parameter {
-        #    <param_var>
-        #}
-
-        #token parameter:sym<param_var> {
-        #    #say "Calling next"; 
-        #    <param_var>
-        #    #<Grammar::parameter>
-        #    ##my $cursor = $main-grammar.^find_method('parameter');
-        #    ##return $cursor if $cursor();
-        #    ##say "Raw param_var";
-        #    #my $cursor = self.proxy_param_var;
-        #    #return $cursor;
-        #}
-
-    token term:sym<nomy_declarator> {
-        [ <?> ] # | 'bb = 15']
-        { say "IN nomy"; }
-
-        :my $*SCOPE = 'my';
-        :my $*VARIABLE = '';
-        <variable_declarator>
     }
 }
 
@@ -82,30 +66,6 @@ role Nogil::NogilActions {
         $*W.do_pragma('', 'MONKEY', 1, ());
         $*W.do_pragma('', 'lib', 1, nqp::list('.'.IO, 'lib'.IO, 't'.IO, 't/lib'.IO));
     }
-    method sigil(Mu $/) {
-        my $res = make $/;
-        # TODO see if that can be in Raku way
-        my $nogil = lk($/, 'nogil');
-        $res = make $nogil.made if $nogil;
-        #say "Action -> $res";
-        #$res = make '$';
-        return $res;
-    }
-
-    method nogil(Mu $/){
-        make '$';
-    }
-    
-
-    #method variable(Mu $/) {
-    #    say "Variable $/";
-    #    return make $/.made;
-    #}
-
-
-    #method scope_declarator:sym<nomy>(Mu $/) {
-    #    make lk($/, 'scoped').made;
-    #}
 }
 
 

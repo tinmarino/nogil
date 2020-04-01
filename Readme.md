@@ -1,4 +1,4 @@
-# Nogil
+# Slang::Nogil
 
 Raku slang permiting __Not__ to use sigils
 
@@ -22,5 +22,5 @@ From [jnthn](https://stackoverflow.com/questions/50399784):
 
 ### Links
 
-* Arne [for european sigil €](https://raku-musings.com/eu.html)
+* [European sigil €](https://raku-musings.com/eu.html) <- from the time `token sigil` was a proto
 
