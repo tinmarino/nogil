@@ -3,7 +3,7 @@
     "name" : "Slang::Nogil",
     "api"  : "1",
     "auth" : "github:tinmarino",
-    "version" : "0.0.01",
+    "version" : "0.0.03",
     "description" : "Si - No - Si - gil",
     "authors" : [ "Tinmarino" ],
     "license" : "Artistic-2.0",

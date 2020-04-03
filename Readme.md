@@ -8,6 +8,19 @@ my a = 3; say a;  # OUTPUT: 3
 ```
 
 
+### Alternatives
+
+1. [sigless](https://opensource.com/article/18/9/using-sigils-perl-6) variables:
+
+```raku
+my \foo = $ = 41;                # a sigilless scalar variable
+my \bar = @ = 1,2,3,4,5;         # a sigilless array
+my \baz = % = a => 42, b => 666; # a sigilless hash
+```
+
+2. [lvalue](http://www.dlugosz.com/Perl6/web/lvalues.html) routines:
+
+
 ### Why are sigils useful anyway ?
 
 From [jnthn](https://stackoverflow.com/questions/50399784):

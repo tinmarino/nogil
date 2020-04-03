@@ -3,7 +3,7 @@ use Slang::Nogil;
 use test-util;
 use Test;
 
-plan 2;
+plan 3;
 
 # use MONKEY
 augment class Int {
@@ -13,6 +13,10 @@ ok 212.is-answer, 'Use monkey: can augment';
 
 # use lib t/lib
 is from-test-util, 'from test-util', 'Use lib t/lib';
+
+# no strict
+$not-strict = 42;
+is $not-strict, 42, 'No strict';
 
 # use experimental :macros :pack :cached
 #my $called;

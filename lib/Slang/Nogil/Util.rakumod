@@ -51,6 +51,6 @@ sub by-parameter is export {
     my $res = 'parameter' ∈ $stack;
     $res = $res && 'typename' ∉ $stack;
     #$res = $res || 'term:sym<name>' ∈ $stack;
-    log "Parameter: ", $res, " <- ", $stack;
+    #log "Parameter: ", $res, " <- ", $stack;
     return $res;
 }

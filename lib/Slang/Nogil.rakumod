@@ -47,12 +47,17 @@ role NogilGrammar {
     token nogil {
         | '€'
         | <?>
-        {log "No sigil:", get-stack; }
+        #{log "No sigil:", get-stack; }
     }
 
-    #token term:sym<name> {
-    #    # Line 3125
-    #};
+    # For debug
+    method term:sym<name> {
+        my $method := $main-grammar.^find_method('term:sym<name>');
+        my $res := $method(self);
+        $res := $res.^mixin(sigilizer);
+        #say "Parse term:", $res.Str;
+        return $res;
+    };
 
 
     token longname {
@@ -82,6 +87,28 @@ role NogilActions {
     method sigil(Mu $/){
         my $res := $/.^mixin(sigilizer);
         return $res;
+    }
+
+    method term:sym<name>(Mu $/) {
+        #say "Action term:", $/.Str;
+        my $match = $/.Str;
+        my $is-var = False;
+        sub evaluate($name, Mu $value, $has_value, $hash) {
+            return 1 unless $hash && $hash<scope> && $hash<scope> eq 'lexical';
+            if $name eq '$' ~ $match {
+                #say $name;
+                $is-var = True;
+            }
+            return 1;
+        }
+        $*W.walk_symbols(&evaluate) if $match;
+        if $is-var {
+            #say "Yes fake variable:";
+            #say $/.Str;
+            return self.variable($/);
+        }
+        #say "No Next";
+        nextsame;
     }
 }
 
