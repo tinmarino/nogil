@@ -2,18 +2,28 @@ use lib 'lib';
 use Slang::Nogil;
 use Test;
 
-plan 4;
+plan 8;
 
-my $a = 11;
-is $a, 11, 'Yes sigil, Yes my';
+my $sigil = 11;
+is $sigil, 11, 'Yes sigil, Yes my';
 
 my a = 12;
 is a, 12, 'No sigil, Yes my';
+a = 12.1;
+is a, 12.1, 'No sigil, reassginment';
+is $a, 12.1, 'No sigil, binds to $';
+is "interpol $a", "interpol 12.1", 'No sigil, interpolation';
 
-# TODO $a = 11 and should be 12
+# This one is Undecalred routine
+#b = 12.3;
 
 $b = 13;
 is $b, 13, 'Yes sigil, No my';
+
+
+my x1 = 13; my x2 = 12;
+is x1 + x2, 25, 'Sum';
+
 
 #my ($c, $d) = 14, 15;
 #is $c, 14, 'Tuple assign 1';

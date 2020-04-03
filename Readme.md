@@ -3,6 +3,7 @@
 Raku slang permiting __Not__ to use sigils
 
 ```raku
+use Slang::Nogil;
 my a = 3; say a;  # OUTPUT: 3
 ```
 
@@ -22,5 +23,6 @@ From [jnthn](https://stackoverflow.com/questions/50399784):
 
 ### Links
 
-* [European sigil €](https://raku-musings.com/eu.html) <- from the time `token sigil` was a proto
+* [European sigil €](https://raku-musings.com/eu.html) -> from the time `token sigil` was a proto
+* [Slang Mouq Tuto](https://mouq.github.io/slangs.html) -> aimed at `use v5`, shows very well the skeleton
 
