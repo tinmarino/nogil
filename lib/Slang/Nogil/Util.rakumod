@@ -15,15 +15,16 @@ sub sigilize(Str $name) is export {
 }
 
 # Str -> '$'
-role sigilizer is export {
+role Sigilizer is export {
     method Str() {
         return nqp::unbox_s( sigilize(callsame) );
     }
 }
 
-# Helper: Look Key, Set Key
-sub lk(Mu \h, \k) is export { nqp::atkey(nqp::findmethod(h, 'hash')(h), k); }
-sub sk(Mu \h, \k, \v) is export { nqp::bindkey(nqp::findmethod(h, 'hash')(h), k, v); }
+# Helper: Gtt Hash, Look Key, Set Key
+sub gh(Mu \h) is export { nqp::findmethod(h, 'hash')(h); }
+sub lk(Mu \h, \k) is export { nqp::atkey(gh(h), k); }
+sub sk(Mu \h, \k, \v) is export { nqp::bindkey(gh(h), k, v); }
 
 sub get-stack is export {
     my $bt = Backtrace.new;
@@ -54,3 +55,18 @@ sub by-parameter is export {
     #log "Parameter: ", $res, " <- ", $stack;
     return $res;
 }
+
+
+## Export constant
+#my module EXPORTHOW {
+#
+#}
+
+#    method ^find_method(Mu:U \this, Mu $name) {
+#      say $name;
+#      callsame;
+#    }
+#
+#    method ^publish_method_cache(Mu:U \this) {
+#        # Suppress this, so we always hit find_method.
+#    }

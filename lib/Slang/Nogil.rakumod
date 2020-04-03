@@ -8,57 +8,69 @@ use QAST:from<NQP>;
 my $grammar = my $main-grammar = $*LANG.slang_grammar('MAIN');
 my $actions = my $main-actions = $*LANG.slang_actions('MAIN');
 
-
 # Slang grammar
-role NogilGrammar {
+role NogilGrammar { #is TracedRoleHOW {
+    # Variable
     method variable_declarator {
         my $method := $main-grammar.^find_method('variable_declarator');
         my $res := $method(self);
         return $res;
     }
-
     method variable {
         my $method := $main-grammar.^find_method('variable');
         my $res := $method(self);
-        if $*LEFTSIGIL eq '=' {
-            return $res;
-        }
-        $res := $res.^mixin(sigilizer);
+        # Pod ?
+        return $res if $*LEFTSIGIL eq '=';
+        $res := $res.^mixin(Sigilizer);
         $*LEFTSIGIL := sigilize($*LEFTSIGIL).substr(0, 1);
-
-        #nqp::bindattr_s($res.made, $res.made.WHAT, '$!name', $res.Str);
         return $res;
     }
 
-    method sigil {
-        my $res;
-        # Bind
-        #$res := self.sigil-my;
-        $res := self.sigil-my.^mixin(sigilizer);
-        return $res;
-    }
-
+    # Sigil
+    method sigil { return self.sigil-my.^mixin(Sigilizer); }
     token sigil-my {
-        | <[$@%&]> |
-        <?{ by-variable }>
-        <nogil>
+        | <[$@%&]>
+        | <?{ by-variable }> <nogil>
     }
-
-    token nogil {
-        | '€'
-        | <?>
-        #{log "No sigil:", get-stack; }
-    }
+    token nogil { '€' | <?> }
 
     # For debug
     method term:sym<name> {
-        my $method := $main-grammar.^find_method('term:sym<name>');
-        my $res := $method(self);
-        $res := $res.^mixin(sigilizer);
-        #say "Parse term:", $res.Str;
+        #say "\n\nCalling my term:sym<name>:";
+        my $match = '';
+        my $is-var = False;
+        my $res;
+        # Cheat
+        try {
+            my $method := $main-grammar.^find_method('term:sym<name>');
+            $res := $method(self);
+            
+            $match = lk($res, 'longname').Str if lk($res, 'longname');
+            sub evaluate($name, Mu $value, $has_value, $hash) {
+                return 1 unless $hash && $hash<scope> && $hash<scope> eq 'lexical';
+                if $name eq '$' ~ $match {
+                    #say $name;
+                    $is-var = True;
+                }
+                return 1;
+            }
+            $*W.walk_symbols(&evaluate) if $match;
+        }
+
+        if $is-var {
+            #say "Parse: in fake variable";
+            my $method := $main-grammar.^find_method('term:sym<variable>');
+            $res := $method(self);
+            $res := $res.^mixin(Sigilizer);
+            #$res := self.fails;
+        }
+
+        #say "Parsed term:", $res.Str;
         return $res;
     };
 
+    token fails { <!> }
+    token succed { <?> }
 
     token longname {
         # Restrict longname in parameter: removing the 'just a longname error'
@@ -78,37 +90,38 @@ role NogilActions {
         # Play change, TODO this destroys the % & sigils
         sk($/, 'sigil', '$');
 
-        my $res := $/.^mixin(sigilizer);
+        my $res := $/;
+        #say "Action Var" ~ $/.Str;
+        $res := $res.^mixin(Sigilizer);
         $*LEFTSIGIL := sigilize($*LEFTSIGIL).substr(0, 1);
         $res := callwith($res);
+        #say "Action var: ", $res.dump;
         return $res;
     }
 
-    method sigil(Mu $/){
-        my $res := $/.^mixin(sigilizer);
-        return $res;
-    }
+    method sigil(Mu $/){ return $/.^mixin(Sigilizer); }
 
     method term:sym<name>(Mu $/) {
-        #say "Action term:", $/.Str;
         my $match = $/.Str;
+        #log "\nAction term:", $/.Str;
+        $match := lk($/, 'longname') if lk($/, 'longname');
         my $is-var = False;
         sub evaluate($name, Mu $value, $has_value, $hash) {
             return 1 unless $hash && $hash<scope> && $hash<scope> eq 'lexical';
             if $name eq '$' ~ $match {
-                #say $name;
                 $is-var = True;
             }
             return 1;
         }
         $*W.walk_symbols(&evaluate) if $match;
+        my $res;
         if $is-var {
-            #say "Yes fake variable:";
-            #say $/.Str;
-            return self.variable($/);
+            $res := QAST::Var.new( :name('$' ~ $match) );
+        } else {
+            $res := callsame;
         }
-        #say "No Next";
-        nextsame;
+        #log "Actioned term:\n", $res.dump;
+        return $res;
     }
 }
 
@@ -117,15 +130,10 @@ role NogilActions {
 $grammar = $grammar.^mixin(NogilGrammar);
 $actions = $actions.^mixin(NogilActions);
 
+#$grammar.^trace-on;
+#$actions.^trace-on;
 
-sub EXPORT(|) {
-    # Integrate slang to Raku main language (i.e not to regex or quote)
-    $*LANG.define_slang('MAIN', $grammar, $actions);
-
-    # Return empty hash -> specify that we’re not exporting anything extra
-    return {};
-}
-
+sub EXPORT(|) { $*LANG.define_slang('MAIN', $grammar, $actions); return {}; }
 
 =begin pod
 =head1 NAME
