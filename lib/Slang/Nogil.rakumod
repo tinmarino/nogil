@@ -3,7 +3,6 @@ use Slang::Nogil::Util;
 use nqp;
 use QAST:from<NQP>;
 
-
 # Save: main raku grammar
 my $grammar = my $main-grammar = $*LANG.slang_grammar('MAIN');
 my $actions = my $main-actions = $*LANG.slang_actions('MAIN');
@@ -11,13 +10,7 @@ my $actions = my $main-actions = $*LANG.slang_actions('MAIN');
 # Slang grammar
 role NogilGrammar {
     # Variable
-    method variable_declarator {
-        my $res := $main-grammar.^find_method('variable_declarator')(self);
-        log "VarDEcl:", $res.Str;
-        return $res;
-    }
     method variable {
-        log "Variable called";
         my $res := $main-grammar.^find_method('variable')(self);
         # Pod ?
         return $res if $*LEFTSIGIL eq '=';
@@ -34,34 +27,47 @@ role NogilGrammar {
     }
     token nogil { '€' | <?> }
 
+    token scope_declarator:sym<nomy> {
+        <nomy_declarator>
+    }
+
     token nomy_declarator {
-        { log "\nDecl nomy..." }
+        # Leave the {}
+        {}
         :my $*SCOPE = 'my';
         <DECL=declarator>
-        { log "...DEcl nomy returned: ", $/.Str }
+        {}
     }
 
     # For debug
     method term:sym<name> {
         # CallSame
         my $res := $main-grammar.^find_method('term:sym<name>')(self);
-        log "term:sym<name> <- ", $res.Str;
 
-		# Get type
+        # Get type
         my $match = lk($res, 'longname') ?? lk($res, 'longname').Str !! '';
-		my $type = nqp-type $match;
-
-        # Try to declare BEFORE if not a function
+        my $type = nqp-type $match;
 
         if $type == SIG {
-            log "TermParse -> in fake variable:", $res.Str;
             $res := $main-grammar.^find_method('term:sym<variable>')(self);
             $res := $res.^mixin(Sigilizer);
             #$res := self.fails;
-			return $res;
+            return $res;
         }
 
-        log "TermParse -> Natual:", $res.Str;
+        # Fake fail because declaration
+        my $bol = $type == NOT;
+        if $res && nqp::findmethod($res, 'hash') {
+            my %h = gh $res;
+            $bol = $bol && lk($res, 'args');
+        } else {
+            $bol = False;
+        }
+        if $bol {
+            # I want to fail, hopefully <scope_declarator> or <variable>
+            $res := self.fails;
+            return $res;
+        }
         return $res;
     };
 
@@ -87,22 +93,28 @@ role NogilActions {
         my $res := $/;
         sk($res, 'sigil', '$');
 
-        log "Action Var: " ~ $res.Str;
         $res := $res.^mixin(Sigilizer);
         $*LEFTSIGIL := sigilize($*LEFTSIGIL).substr(0, 1);
         $res := callwith($res);
-        log "Action var: ", $res.dump;
         return $res;
     }
 
     method sigil(Mu $/){ return $/.^mixin(Sigilizer); }
 
     method term:sym<name>(Mu $/) {
+        # <longname> <args>?
         my $match = $/.Str;
         $match := lk($/, 'longname').Str if lk($/, 'longname');
-		my $type = nqp-type $match;
+        my $type = nqp-type $match;
         if $type == SIG {
             return QAST::Var.new( :name('$' ~ $match) );
+        }
+
+        ## Also should not fail if param
+        my $bol = $type == NOT;
+        $bol = $bol && lk($/, 'args');
+        if $bol {
+            return nqp-create-var('$' ~ $match);
         }
         nextsame;
     }

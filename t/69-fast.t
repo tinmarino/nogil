@@ -4,7 +4,12 @@ use Test;
 
 plan 0;
 
-my $toto;
 toto = 42;
+toto = 43;
+say 12 + toto;
 say toto;
-#say toto;
+
+sub fct-nsig-ntype(param3) {
+    say param3;
+}
+fct-nsig-ntype("azeaze");

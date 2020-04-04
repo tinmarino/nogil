@@ -4,7 +4,7 @@ use nqp;
 use QAST:from<NQP>;
 
 # TODO verbose from stdin
-my $verbose = 0;
+my $verbose = 1;
 sub log(**@args) is export {say |@args if $verbose;}
 
 sub sigilize(Str $name) is export {
@@ -63,21 +63,21 @@ sub nqp-create-var($name) is export {
 	log "Createing $name -------------------------------";
     my $res := QAST::Op.new(
         :op('bind'),
-        QAST::Var.new( :name('$toto'), :scope('lexical'), :decl('var'), :returns(int) ),
+        QAST::Var.new( :$name, :scope('lexical'), :decl('var'), :returns(int) ),
         QAST::IVal.new( :value(0) )
     );
-	log "Created \$toto";
+	log "Created $name";
 	return $res;
 }
 
 
 our constant SIG is export = 1;
 our constant FCT is export = 2;
-our constant NO is export = 3;
+our constant NOT is export = 3;
 
 
 sub nqp-type(Mu $arg-check) is export {
-	my $res = NO;
+	my $res = NOT;
 	return $res unless $arg-check;
 	my $to-check = $arg-check.Str;
 	return $res unless $to-check;
@@ -88,14 +88,17 @@ sub nqp-type(Mu $arg-check) is export {
 		return 1;
 	}
 	try { $*W.walk_symbols(&evaluate) if $to-check; }
-	log "Type $to-check is $res --------------------------", get-stack;
+	log "Type $to-check is $res --------------------------", get-stack, "\n";
 	return $res;
 }
 
 # Debugging
-sub dump-nqphash(Mu $hash) is export {
+sub nqp-dump-hash(%hash) is export {
     log "Dumping:";
-    for $hash {
-        log(nqp::iterkey_s($_), ' => ', nqp::iterval($_));
+    for %hash.kv -> $k, $v {
+        say "INloop";
+        say "$k -> $v";
+        #say(nqp::iterkey_s($_), ' => ', nqp::iterval($_));
     }
+    log "dumped";
 }
