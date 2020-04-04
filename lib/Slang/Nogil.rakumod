@@ -9,16 +9,16 @@ my $grammar = my $main-grammar = $*LANG.slang_grammar('MAIN');
 my $actions = my $main-actions = $*LANG.slang_actions('MAIN');
 
 # Slang grammar
-role NogilGrammar { #is TracedRoleHOW {
+role NogilGrammar {
     # Variable
     method variable_declarator {
-        my $method := $main-grammar.^find_method('variable_declarator');
-        my $res := $method(self);
+        my $res := $main-grammar.^find_method('variable_declarator')(self);
+        log "VarDEcl:", $res.Str;
         return $res;
     }
     method variable {
-        my $method := $main-grammar.^find_method('variable');
-        my $res := $method(self);
+        log "Variable called";
+        my $res := $main-grammar.^find_method('variable')(self);
         # Pod ?
         return $res if $*LEFTSIGIL eq '=';
         $res := $res.^mixin(Sigilizer);
@@ -34,38 +34,34 @@ role NogilGrammar { #is TracedRoleHOW {
     }
     token nogil { '€' | <?> }
 
+    token nomy_declarator {
+        { log "\nDecl nomy..." }
+        :my $*SCOPE = 'my';
+        <DECL=declarator>
+        { log "...DEcl nomy returned: ", $/.Str }
+    }
+
     # For debug
     method term:sym<name> {
-        #say "\n\nCalling my term:sym<name>:";
-        my $match = '';
-        my $is-var = False;
-        my $res;
-        # Cheat
-        try {
-            my $method := $main-grammar.^find_method('term:sym<name>');
-            $res := $method(self);
-            
-            $match = lk($res, 'longname').Str if lk($res, 'longname');
-            sub evaluate($name, Mu $value, $has_value, $hash) {
-                return 1 unless $hash && $hash<scope> && $hash<scope> eq 'lexical';
-                if $name eq '$' ~ $match {
-                    #say $name;
-                    $is-var = True;
-                }
-                return 1;
-            }
-            $*W.walk_symbols(&evaluate) if $match;
-        }
+        # CallSame
+        my $res := $main-grammar.^find_method('term:sym<name>')(self);
+        log "term:sym<name> <- ", $res.Str;
 
-        if $is-var {
-            #say "Parse: in fake variable";
-            my $method := $main-grammar.^find_method('term:sym<variable>');
-            $res := $method(self);
+		# Get type
+        my $match = lk($res, 'longname') ?? lk($res, 'longname').Str !! '';
+		my $type = nqp-type $match;
+
+        # Try to declare BEFORE if not a function
+
+        if $type == SIG {
+            log "TermParse -> in fake variable:", $res.Str;
+            $res := $main-grammar.^find_method('term:sym<variable>')(self);
             $res := $res.^mixin(Sigilizer);
             #$res := self.fails;
+			return $res;
         }
 
-        #say "Parsed term:", $res.Str;
+        log "TermParse -> Natual:", $res.Str;
         return $res;
     };
 
@@ -88,14 +84,14 @@ role NogilActions {
 
     method variable(Mu $/){
         # Play change, TODO this destroys the % & sigils
-        sk($/, 'sigil', '$');
-
         my $res := $/;
-        #say "Action Var" ~ $/.Str;
+        sk($res, 'sigil', '$');
+
+        log "Action Var: " ~ $res.Str;
         $res := $res.^mixin(Sigilizer);
         $*LEFTSIGIL := sigilize($*LEFTSIGIL).substr(0, 1);
         $res := callwith($res);
-        #say "Action var: ", $res.dump;
+        log "Action var: ", $res.dump;
         return $res;
     }
 
@@ -103,25 +99,12 @@ role NogilActions {
 
     method term:sym<name>(Mu $/) {
         my $match = $/.Str;
-        #log "\nAction term:", $/.Str;
-        $match := lk($/, 'longname') if lk($/, 'longname');
-        my $is-var = False;
-        sub evaluate($name, Mu $value, $has_value, $hash) {
-            return 1 unless $hash && $hash<scope> && $hash<scope> eq 'lexical';
-            if $name eq '$' ~ $match {
-                $is-var = True;
-            }
-            return 1;
+        $match := lk($/, 'longname').Str if lk($/, 'longname');
+		my $type = nqp-type $match;
+        if $type == SIG {
+            return QAST::Var.new( :name('$' ~ $match) );
         }
-        $*W.walk_symbols(&evaluate) if $match;
-        my $res;
-        if $is-var {
-            $res := QAST::Var.new( :name('$' ~ $match) );
-        } else {
-            $res := callsame;
-        }
-        #log "Actioned term:\n", $res.dump;
-        return $res;
+        nextsame;
     }
 }
 

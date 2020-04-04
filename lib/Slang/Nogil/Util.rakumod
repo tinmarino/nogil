@@ -1,9 +1,10 @@
 unit module Slang::Nogil::Util;
 
 use nqp;
+use QAST:from<NQP>;
 
 # TODO verbose from stdin
-my $verbose = 1;
+my $verbose = 0;
 sub log(**@args) is export {say |@args if $verbose;}
 
 sub sigilize(Str $name) is export {
@@ -21,7 +22,7 @@ role Sigilizer is export {
     }
 }
 
-# Helper: Gtt Hash, Look Key, Set Key
+# Get Hash, Look Key, Set Key
 sub gh(Mu \h) is export { nqp::findmethod(h, 'hash')(h); }
 sub lk(Mu \h, \k) is export { nqp::atkey(gh(h), k); }
 sub sk(Mu \h, \k, \v) is export { nqp::bindkey(gh(h), k, v); }
@@ -57,16 +58,44 @@ sub by-parameter is export {
 }
 
 
-## Export constant
-#my module EXPORTHOW {
-#
-#}
+sub nqp-create-var($name) is export {
+	# Assign a return a default variable
+	log "Createing $name -------------------------------";
+    my $res := QAST::Op.new(
+        :op('bind'),
+        QAST::Var.new( :name('$toto'), :scope('lexical'), :decl('var'), :returns(int) ),
+        QAST::IVal.new( :value(0) )
+    );
+	log "Created \$toto";
+	return $res;
+}
 
-#    method ^find_method(Mu:U \this, Mu $name) {
-#      say $name;
-#      callsame;
-#    }
-#
-#    method ^publish_method_cache(Mu:U \this) {
-#        # Suppress this, so we always hit find_method.
-#    }
+
+our constant SIG is export = 1;
+our constant FCT is export = 2;
+our constant NO is export = 3;
+
+
+sub nqp-type(Mu $arg-check) is export {
+	my $res = NO;
+	return $res unless $arg-check;
+	my $to-check = $arg-check.Str;
+	return $res unless $to-check;
+	sub evaluate($name, Mu $value, $has_value, $hash) {
+		#return 1 unless $hash && $hash<scope> && $hash<scope> eq 'lexical';
+		if $name eq '$' ~ $to-check { $res = SIG; return 0; }
+		if $name eq '&' ~ $to-check { $res = FCT; return 0; }
+		return 1;
+	}
+	try { $*W.walk_symbols(&evaluate) if $to-check; }
+	log "Type $to-check is $res --------------------------", get-stack;
+	return $res;
+}
+
+# Debugging
+sub dump-nqphash(Mu $hash) is export {
+    log "Dumping:";
+    for $hash {
+        log(nqp::iterkey_s($_), ' => ', nqp::iterval($_));
+    }
+}

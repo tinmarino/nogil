@@ -1,4 +1,3 @@
-
 ## Introspection
 
 ### Introspection Grammar
