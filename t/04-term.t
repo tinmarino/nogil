@@ -39,7 +39,4 @@ newvar = newvar - 1; # 10
 newvar = newvar * 10 + 2 * newvar - 20; newvar;  # 100; useless statement
 is newvar, 100, 'Autovivivate in Arith';
 
-# Autovivication is creating Any, I want ''
-# is not-existing1, '', 'Aucovivicate: start with ""';
-
 done-testing;

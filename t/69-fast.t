@@ -2,14 +2,12 @@ use lib 'lib';
 use Slang::Nogil;
 use Test;
 
-plan 0;
+plan :skip-all<For dev only>;
 
-toto = 42;
-toto = 43;
-say 12 + toto;
-say toto;
+local = "value";
+say local;
 
-sub fct-nsig-ntype(param3) {
-    say param3;
+sub fct(param) {
+    say param;
 }
-fct-nsig-ntype("azeaze");
+fct("argument");

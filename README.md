@@ -7,6 +7,17 @@ use Slang::Nogil;
 my a = 3; say a;  # OUTPUT: 3
 ```
 
+```raku
+use Slang::Nogil;
+local = "value";
+say local;  # OUTPUT: "value"
+
+sub fct(param) {
+    say param;
+}
+fct("argument");  # OUTPUT: "argument"
+```
+
 
 ### Alternatives
 
@@ -19,6 +30,8 @@ my \baz = % = a => 42, b => 666; # a sigilless hash
 ```
 
 2. [lvalue](http://www.dlugosz.com/Perl6/web/lvalues.html) routines:
+With the [is rw](https://docs.raku.org/routine/is%20rw) [trait](https://docs.raku.org/language/traits).
+
 
 
 ### Why are sigils useful anyway ?

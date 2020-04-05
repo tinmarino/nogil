@@ -19,6 +19,7 @@ is from-test-util, 'from test-util', 'Use lib t/lib';
 $not-strict = 42;
 is $not-strict, 42, 'No strict';
 
+# TODO
 # use experimental :macros :pack :cached
 #my $called;
 #macro called() {
