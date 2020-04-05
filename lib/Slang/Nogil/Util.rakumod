@@ -9,10 +9,15 @@ our constant FCT is export = 2;
 our constant NOT is export = 3;
 sub log(**@args) is export {say |@args if $verbose;}
 
-#= Get Hash, Look Key, Set Key
+#= Get Hash, Look Key, Set Key, Get Key as String
 sub gh(Mu \h) is export { nqp::findmethod(h, 'hash')(h); }
 sub lk(Mu \h, \k) is export { nqp::atkey(gh(h), k); }
 sub sk(Mu \h, \k, \v) is export { nqp::bindkey(gh(h), k, v); }
+sub str-key(Mu \h, \k) is export {
+    my $obj = lk(h, k);
+    return '' unless $obj;
+    return $obj.Str;
+}
 
 
 sub get-stack is export {

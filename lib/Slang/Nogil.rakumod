@@ -77,11 +77,13 @@ role NogilActions {
 
     method variable(Mu $/){
         # Play change, TODO this destroys the % & sigils
-        my $res := $/;
-        sk($res, 'sigil', '$');
-        $res := $res.^mixin(Sigilizer);
+        my $ast := $/;
+        my $sigil = str-key($ast, 'sigil');
+        $sigil = '$' unless $sigil;
+        sk($ast, 'sigil', $sigil);
+        $ast := $ast.^mixin(Sigilizer);
         $*LEFTSIGIL := sigilize($*LEFTSIGIL).substr(0, 1);
-        nextwith($res);
+        nextwith($ast);
     }
 
     method sigil(Mu $/){ return $/.^mixin(Sigilizer); }

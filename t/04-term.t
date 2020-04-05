@@ -2,7 +2,7 @@ use lib 'lib';
 use Slang::Nogil;
 use Test;
 
-plan 12;
+plan 11;
 
 my sigless = 10;
 is $sigless + 1, 11, 'Op: Sigiless + 1';
@@ -29,14 +29,10 @@ is ($tup44, tup43), (('3', '4'), ('1', '2')), 'Tuple declaration no my';
 strnum1 = "45"; strnum2 = '55';
 is strnum1 + strnum2, 100, 'Aucoconvert';
 
-
-# Autovivication of scalar (gets a warning [better])
-is 45 + not-existing2, 45, 'Aucovivicate: in numish';
-
 newvar++;  # 1
 newvar += 10;  # 11
 newvar = newvar - 1; # 10
-newvar = newvar * 10 + 2 * newvar - 20; newvar;  # 100; useless statement
+newvar = newvar * 10 + 2 * newvar - 20;  # 100;
 is newvar, 100, 'Autovivivate in Arith';
 
 done-testing;

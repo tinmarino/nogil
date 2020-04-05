@@ -11,3 +11,8 @@ plan :skip-all<Current known bugs>;
 
 # 2
 # Scope if parameter has the same name as lexical varaible higher, it should hide it
+
+
+# Idea: Add to tests
+# Warning statemetn in sink context, list afectation in sink context
+# Pb : I don't know how to  catch compile warning
