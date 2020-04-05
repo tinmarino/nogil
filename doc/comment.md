@@ -14,7 +14,7 @@ $grammar.^trace-on
 ### Actions inspection
 
 
-### Comments on code
+## Comments on code
 
 ```raku
 method term:sym<name>(Mu $/) {
