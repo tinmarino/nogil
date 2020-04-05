@@ -4,7 +4,7 @@
     "perl" : "6.*",
     "api"  : "1",
     "auth" : "github:tinmarino",
-    "version" : "0.05",
+    "version" : "0.06",
     "description" : "Si - No - Si - gil, Raku slang permitting scalars with or without sigils",
     "provides" : {
         "Slang::Nogil" : "lib/Slang/Nogil.rakumod",

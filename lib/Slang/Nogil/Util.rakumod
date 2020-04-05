@@ -4,9 +4,12 @@ use QAST:from<NQP>;
 
 # TODO verbose from stdin
 my $verbose = 0;
-our constant SIG is export = 1;
-our constant FCT is export = 2;
-our constant NOT is export = 3;
+our constant NOT is export = 0;  #= Not ... used ;-)
+our constant SCA is export = 1;  #= Scalar
+our constant SUB is export = 2;  #= Function
+our constant LST is export = 3;  #= List
+our constant HSH is export = 4;  #= HAsh
+our constant SLE is export = 5;  #= Sigless
 sub log(**@args) is export {say |@args if $verbose;}
 
 #= Get Hash, Look Key, Set Key, Get Key as String
@@ -70,7 +73,7 @@ sub longname-n-type(Mu $obj) is export {
     my $longname = $obj.Str;
     my $o_longname = lk($obj, 'longname');
     $longname = $o_longname.Str if $o_longname;
-    return $longname, nqp-type($longname);
+    return $longname, |nqp-types($longname);
 }
 
 sub nqp-create-var($name) is export {
@@ -84,16 +87,20 @@ sub nqp-create-var($name) is export {
 }
 
 
-sub nqp-type(Mu $arg-check) is export {
-    my $res = NOT;
-    return $res unless $arg-check;
+sub nqp-types(Mu $arg-check) is export {
+    #= Get name known types
+    my @types = ();
+    return @types unless $arg-check;
     my $to-check = $arg-check.Str;
-    return $res unless $to-check;
+    return @types unless $to-check;
     sub evaluate($name, Mu $value, $has_value, $hash) {
-        if $name eq '$' ~ $to-check { $res = SIG; return False; }
-        if $name eq '&' ~ $to-check { $res = FCT; return False; }
+        if $name eq '$' ~ $to-check { @types.push(SCA); }
+        if $name eq '&' ~ $to-check { @types.push(SUB); }
+        if $name eq '@' ~ $to-check { @types.push(LST); }
+        if $name eq '%' ~ $to-check { @types.push(HSH); }
+        if $name eq $to-check { @types.push(SLE); }
         return True;
     }
     try { $*W.walk_symbols(&evaluate) if $to-check; }
-    return $res;
+    return @types;
 }

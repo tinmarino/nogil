@@ -73,4 +73,5 @@ is h-cont<a>, 'b', 'Associative indexing (nogil)';
 h-slice<a b c> = 2 xx *;
 is h-slice, {a => 2, b => 2, c => 2}, 'Slice Assign';
 
+
 done-testing;

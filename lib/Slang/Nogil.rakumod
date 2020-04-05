@@ -12,10 +12,14 @@ role NogilGrammar {
         # CallSame
         my $res := $main-grammar.^find_method('term:sym<name>')(self);
 
-        # Get type
-        my $type = longname-n-type($res)[1];
+        # Get known types
+        my ($longname, @types) = longname-n-type($res);
 
-        if $type == SIG {
+        if (SUB, SLE) ∩ @types {
+            return $res;
+        }
+
+        if SCA ∈ @types {
             $res := $main-grammar.^find_method('term:sym<variable>')(self);
             $res := $res.^mixin(Sigilizer);
             #$res := self.fails;
@@ -23,7 +27,7 @@ role NogilGrammar {
         }
 
         # Fake fail because declaration
-        my $bol = $type == NOT;
+        my $bol = (SUB ∉ @types);
         if $res && nqp::findmethod($res, 'hash') {
             my %h = gh $res;
             $bol = $bol && lk($res, 'args');
@@ -89,15 +93,19 @@ role NogilActions {
     method sigil(Mu $/){ return $/.^mixin(Sigilizer); }
 
     method term:sym<name>(Mu $/) {
-        my ($longname, $type) = longname-n-type($/);
+        my ($longname, @types) = longname-n-type($/);
         my $args = lk($/, 'args');
 
-        if $type == SIG {
+        if (SUB, SLE) ∩ @types {
+            nextsame;
+        }
+
+        if SCA ∈ @types {
             return QAST::Var.new( :name('$' ~ $longname) );
         }
 
-        ## Also should not fail if param
-        if $type == NOT && $args {
+        ## Should not fail if param
+        if $args {
             return nqp-create-var('$' ~ $longname);
         }
         nextsame;
