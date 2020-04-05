@@ -22,7 +22,9 @@ sub fct(param) {
 fct("argument");  # OUTPUT: "argument"
 ```
 
+
 ## Features
+> If you're going through hell, keep going (Winston Churchill)
 
 "Nogil" variables are hidden [scalar](https://docs.raku.org/type/Scalar) variables.
 You can refer to them with or without the scalar sigil '$'.
@@ -39,6 +41,7 @@ Some [pragmas](https://docs.raku.org/language/pragmas) are added to the importin
 
 
 ## Alternatives
+> A tool is only worth by the hand that animates it (Marshal of Lattre)
 
 1. [sigless](https://opensource.com/article/18/9/using-sigils-perl-6) variables:
 
@@ -53,6 +56,7 @@ With the [is rw](https://docs.raku.org/routine/is%20rw) [trait](https://docs.rak
 
 
 ## Why are sigils useful anyway ?
+> Doubtless this is somewhat interesting to someone somewhere, but we'll restrain ourselves from talking about them somehow (TimToady)
 
 __Brief:__ Sigils can be seem as type declaration. They permit compiler optimisation and avoid user error at compile time.
 
@@ -77,7 +81,9 @@ If those are absent from your code, guess you are writing, like most of us, "bab
 
 Source: [jnthn](https://stackoverflow.com/questions/50399784)
 
+
 ## Links
+> I don't know, Lord, if you are happy with me; but I am very happy with You (Louis Bourdaloue)
 
 * [European sigil €](https://raku-musings.com/eu.html) -> from the time `token sigil` was a proto
 * [Slang Mouq Tuto](https://mouq.github.io/slangs.html) -> aimed at `use v5`, shows very well the skeleton

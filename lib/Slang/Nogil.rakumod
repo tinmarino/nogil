@@ -15,30 +15,20 @@ role NogilGrammar {
         # Get known types
         my ($longname, @types) = longname-n-type($res);
 
-        if (SUB, SLE) ∩ @types {
-            return $res;
-        }
+        # If Existing as Routine or Sigless -> Nothing to do
+        if (SUB, SLE) ∩ @types { return $res; }
 
+        # If Declared -> Sigilize me
         if SCA ∈ @types {
             $res := $main-grammar.^find_method('term:sym<variable>')(self);
             $res := $res.^mixin(Sigilizer);
-            #$res := self.fails;
             return $res;
         }
 
-        # Fake fail because declaration
-        my $bol = (SUB ∉ @types);
-        if $res && nqp::findmethod($res, 'hash') {
-            my %h = gh $res;
-            $bol = $bol && lk($res, 'args');
-        } else {
-            $bol = False;
-        }
-        if $bol {
-            # I want to fail, hopefully <scope_declarator> or <variable>
-            $res := self.fails;
-            return $res;
-        }
+        # If Declaring -> Fake fail
+        if lk($res, 'args') { return self.fails; }
+
+        # Nothing to do -> Will fail
         return $res;
     };
 
@@ -96,18 +86,16 @@ role NogilActions {
         my ($longname, @types) = longname-n-type($/);
         my $args = lk($/, 'args');
 
-        if (SUB, SLE) ∩ @types {
-            nextsame;
-        }
+        # If Existing as Routine or Sigless -> Nothing to do
+        if (SUB, SLE) ∩ @types { nextsame; }
 
-        if SCA ∈ @types {
-            return QAST::Var.new( :name('$' ~ $longname) );
-        }
+        # If Declared -> Sigilize me
+        if SCA ∈ @types { return QAST::Var.new( :name('$' ~ $longname) ); }
 
         ## Should not fail if param
-        if $args {
-            return nqp-create-var('$' ~ $longname);
-        }
+        if $args { return nqp-create-var('$' ~ $longname); }
+
+        # Nothing to do -> Fail as "Routine undeclared"
         nextsame;
     }
 }
