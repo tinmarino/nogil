@@ -3,34 +3,36 @@ use nqp;
 use QAST:from<NQP>;
 
 # Save: main raku grammar
-my $grammar = my $main-grammar = $*LANG.slang_grammar('MAIN');
-my $actions = my $main-actions = $*LANG.slang_actions('MAIN');
+my $main-grammar = $*LANG.slang_grammar('MAIN');
+my $main-actions = $*LANG.slang_actions('MAIN');
 
 
 role NogilGrammar {
     method term:sym<name> {
+        #= The new term will be term:sym<variable>, after a fails
         # CallSame
         my $res := $main-grammar.^find_method('term:sym<name>')(self);
 
         # Get known types
         my ($longname, @types) = longname-n-type($res);
 
-        # If Existing as Routine or Sigless -> Nothing to do
-        if (SUB, SLE) ∩ @types { return $res; }
-
-        # If Declared -> Sigilize me
-        if SCA ∈ @types {
-            $res := $main-grammar.^find_method('term:sym<variable>')(self);
-            $res := $res.^mixin(Sigilizer);
+        # If Existing as Routine or Sigless -> Usually Nothing to do
+        if (SUB, SLE) ∩ @types {
+            # If defining easily toto=12 even if a function -> Next
+            if str-key($res, 'args') ~~ /^ \s* '='/ {
+                self.nogil-warn('Warn01: You are affecting a variable with same name as a function: "' ~ $longname ~ '"');
+                return self.fails;
+            }
             return $res;
         }
 
-        # If Declaring -> Fake fail
-        if lk($res, 'args') { return self.fails; }
+        # If Declared or Declaring -> Next
+        if SCA ∈ @types || lk($res, 'args') { return self.fails; }
 
         # Nothing to do -> Will fail
         return $res;
     };
+
 
     method variable {
         #| Prefix variable Match with a '$'
@@ -59,6 +61,11 @@ role NogilGrammar {
     # Helper
     token fails { <!> }
     token succed { <?> }
+    method nogil-warn(Str $msg) {
+        my $line = HLL::Compiler.lineof(self.orig(), self.from(), :cache(1));
+        my $file = ~nqp::getlexdyn('$?FILES');
+        warn $msg ~ "; in $line;";
+    }
 }
 
 
@@ -87,7 +94,7 @@ role NogilActions {
         my $args = lk($/, 'args');
 
         # If Existing as Routine or Sigless -> Nothing to do
-        if (SUB, SLE) ∩ @types { nextsame; }
+        if (SUB, SLE) ∩ @types { nextsame }
 
         # If Declared -> Sigilize me
         if SCA ∈ @types { return QAST::Var.new( :name('$' ~ $longname) ); }
@@ -102,12 +109,14 @@ role NogilActions {
 
 
 # Mix with user main language
-$grammar = $grammar.^mixin(NogilGrammar);
-$actions = $actions.^mixin(NogilActions);
-sub EXPORT(|) { $*LANG.define_slang('MAIN', $grammar, $actions); return {}; }
+sub EXPORT(|) {
+    return {} if $main-grammar ~~ NogilGrammar;
+    $*LANG.refine_slang('MAIN', NogilGrammar, NogilActions);
+    return {};
+}
 
-#$grammar.^trace-on;
-#$actions.^trace-on;
+#$*LANG.slang_grammar('MAIN').^mixin(NogilGrammar).^trace-on;
+#$*LANG.slang_actions('MAIN').^mixin(NogilActions).^trace-on;
 
 =begin pod
 

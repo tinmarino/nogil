@@ -2,7 +2,7 @@ use lib 'lib';
 use Slang::Nogil;
 use Test;
 
-plan 11;
+plan 13;
 
 ##################################################
 # Name conflict
@@ -17,6 +17,16 @@ is $ident, 'scalar2', 'Nosig same';
 sub ident { return 'function'; }
 is &ident(), 'function', 'Function call';
 is ident, 'function', 'Function precedence';
+# Sub and Nogil (still get
+{
+    sub ident2 { return 'function2'; }
+    EVAL q/use Slang::Nogil; no strict; ident2 = 42;/;
+    is ident2, 'function2', 'Function precedence order';
+    CONTROL { when CX::Warn {
+            ok .message ~~ / "Warn01" /, 'Warn01';
+            .resume;
+    } }
+}
 
 # Arr
 @ident = 'arr' xx 2;

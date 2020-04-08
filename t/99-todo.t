@@ -8,18 +8,12 @@ plan :skip-all<Current known bugs>;
 # Autovivication is creating Any, I want ''
 # is not-existing1, '', 'Aucovivicate: start with ""';
 
-# 2
-# Scope if parameter has the same name as lexical varaible higher, it should hide it
-
-# 3 Conflict
-# TODO thinking it is a FCT
-# A real assignement 
-# sub ident { return 'function'; }
-#ident = 'scalar2';
-
-# 3 conflifct cannot assign a function. Think about what to do
-#sub ident { return 'function'; }
-#ident = 'scalar';
+# 4 Use abuse (to test)
+#use Slang::Nogil;
+#use Slang::Nogil;
+#use MONKEY;
+#use strict;
+#no strict;
 
 
 # Idea: Add to tests

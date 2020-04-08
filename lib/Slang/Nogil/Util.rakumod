@@ -17,6 +17,7 @@ sub gh(Mu \h) is export { nqp::findmethod(h, 'hash')(h); }
 sub lk(Mu \h, \k) is export { nqp::atkey(gh(h), k); }
 sub sk(Mu \h, \k, \v) is export { nqp::bindkey(gh(h), k, v); }
 sub str-key(Mu \h, \k) is export {
+    return '' unless h;
     my $obj = lk(h, k);
     return '' unless $obj;
     return $obj.Str;

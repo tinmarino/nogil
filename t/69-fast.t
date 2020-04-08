@@ -4,10 +4,6 @@ use Test;
 
 plan :skip-all<For dev only>;
 
-local = "value";
-say local;
-
-sub fct(param) {
-    say param;
-}
-fct("argument");
+sub ident { say "In "; return 12; }
+ident = 42;
+say ident;
