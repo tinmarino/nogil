@@ -2,7 +2,7 @@ use lib 'lib';
 use Slang::Nogil;
 use Test;
 
-plan 13;
+plan 15;
 
 # Old declaration
 my $sigil = 11;
@@ -34,8 +34,17 @@ my hsh = %(1=>2, 3=>4);
 is hsh, %(1=>2, 3=>4), 'Hash assign';
 is hsh, $hsh, 'Hash without, with sigil';
 
-# European sigil
+# European sigil (jsut for fun)
 my €europe = 15;
 is €europe, 15, 'European (€) sigil';
+
+# Autodeclare
+## Int
+res-int = ++auto-int + ++auto-int + ++auto-int; # 1 + 2 + 3
+is res-int, 6, 'Autodeclare: Int';
+## Str
+res-str = "a" ~ auto-str ~ "b";
+is res-str, 'ab', 'Autodeclaratino: Str';
+
 
 done-testing;

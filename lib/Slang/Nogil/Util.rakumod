@@ -77,17 +77,6 @@ sub longname-n-type(Mu $obj) is export {
     return $longname, |nqp-types($longname);
 }
 
-sub nqp-create-var($name) is export {
-    #= New assigned variable: `my $name = '';`
-    my $res := QAST::Op.new(
-        :op('bind'),
-        QAST::Var.new( :$name, :scope('lexical'), :decl('var'), :returns(str) ),
-        QAST::SVal.new( :value('') )
-    );
-    return $res;
-}
-
-
 sub nqp-types(Mu $arg-check) is export {
     #= Get name known types
     my @types = ();

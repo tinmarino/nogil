@@ -4,10 +4,6 @@ use Test;
 
 plan :skip-all<Current known bugs>;
 
-# 1
-# Autovivication is creating Any, I want ''
-# is not-existing1, '', 'Aucovivicate: start with ""';
-
 # 4 Use abuse (to test)
 #use Slang::Nogil;
 #use Slang::Nogil;

@@ -4,6 +4,6 @@ use Test;
 
 plan :skip-all<For dev only>;
 
-sub ident { say "In "; return 12; }
-ident = 42;
-say ident;
+# Autodeclare Int
+res-str = "a" ~ auto-str ~ "b";
+say res-str;

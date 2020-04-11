@@ -1,4 +1,5 @@
 use Slang::Nogil::Util;
+use MONKEY;
 use nqp;
 use QAST:from<NQP>;
 
@@ -26,11 +27,8 @@ role NogilGrammar {
             return $res;
         }
 
-        # If Declared or Declaring -> Next
-        if SCA ∈ @types || lk($res, 'args') { return self.fails; }
-
-        # Nothing to do -> Will fail
-        return $res;
+        # Next -> term:sym<variable>
+        return self.fails;
     };
 
 
@@ -40,9 +38,8 @@ role NogilGrammar {
         # Clause if POD
         return $res if $*LEFTSIGIL eq '=';
         # Sigilize
-        $res := $res.^mixin(Sigilizer);
         $*LEFTSIGIL := sigilize($*LEFTSIGIL).substr(0, 1);
-        return $res;
+        return $res.^mixin(Sigilizer);
     }
 
     token longname {
@@ -78,13 +75,11 @@ role NogilActions {
 
     method variable(Mu $/){
         # Play change, TODO this destroys the % & sigils
-        my $ast := $/;
-        my $sigil = str-key($ast, 'sigil');
-        $sigil = '$' unless $sigil;
-        sk($ast, 'sigil', $sigil);
-        $ast := $ast.^mixin(Sigilizer);
+        my $sigil = str-key($/, 'sigil') || '$';
+        sk($/, 'sigil', $sigil);
+        $/ := $/.^mixin(Sigilizer);
         $*LEFTSIGIL := sigilize($*LEFTSIGIL).substr(0, 1);
-        nextwith($ast);
+        nextwith($/);
     }
 
     method sigil(Mu $/){ return $/.^mixin(Sigilizer); }
@@ -96,20 +91,21 @@ role NogilActions {
         # If Existing as Routine or Sigless -> Nothing to do
         if (SUB, SLE) ∩ @types { nextsame }
 
-        # If Declared -> Sigilize me
-        if SCA ∈ @types { return QAST::Var.new( :name('$' ~ $longname) ); }
-
-        ## Should not fail if param
-        if $args { return nqp-create-var('$' ~ $longname); }
-
-        # Nothing to do -> Fail as "Routine undeclared"
-        nextsame;
+        # Sigilize me
+        return QAST::Var.new(:node($/), :name('$' ~ $longname) );
     }
 }
 
+# Autodecl
+augment class Any {
+    method Str { '' }
+    method Int { 0 }
+}
 
 # Mix with user main language
 sub EXPORT(|) {
+
+    # Nogil
     return {} if $main-grammar ~~ NogilGrammar;
     $*LANG.refine_slang('MAIN', NogilGrammar, NogilActions);
     return {};
