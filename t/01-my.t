@@ -38,7 +38,7 @@ is hsh, $hsh, 'Hash without, with sigil';
 my €europe = 15;
 is €europe, 15, 'European (€) sigil';
 
-# Autodeclare
+# Autodeclare (Scalar Autovivication)
 ## Int
 res-int = ++auto-int + ++auto-int + ++auto-int; # 1 + 2 + 3
 is res-int, 6, 'Autodeclare: Int';

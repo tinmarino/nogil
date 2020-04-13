@@ -14,4 +14,4 @@ plan :skip-all<Current known bugs>;
 
 # Idea: Add to tests
 # Warning statemetn in sink context, list afectation in sink context
-# Pb : I don't know how to  catch compile warning
+# Pb : I don't know how to catch compile warning

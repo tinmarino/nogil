@@ -13,6 +13,9 @@ for $obj.^methods -> $meth { say $meth, " = ", $meth($obj) }
 
 # Attributes
 for $obj.^attributes -> $attr { say $attr, " = ", $attr.get_value($obj) }
+
+# Multi signature
+say .signature for @arr.^method_table{'AT-POS'}.candidates ;
 ```
 
 ### Grammar
@@ -49,4 +52,9 @@ return $res;
 method term:sym<name>(Mu $/) {
     #= <longname> <args>
 }
+
+# World
+my Mu $nqplist := nqp::gethllsym(nqp, 'nqplist');
+my $info = $*W.find_symbol($nqplist(['Any']), :setting-only);
+
 ```

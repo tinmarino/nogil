@@ -2,7 +2,7 @@ use lib 'lib';
 use Slang::Nogil;
 use Test;
 
-plan 13;
+plan 16;
 
 ##################################################
 # Name conflict
@@ -26,6 +26,20 @@ is ident, 'function', 'Function precedence';
             ok .message ~~ / "Warn01" /, 'Warn01';
             .resume;
     } }
+}
+
+# Eval
+{
+    EVAL q/use Slang::Nogil; no strict; ident3 = 3;/;
+    is ident3, '3', 'Eval1';
+    {
+        EVAL q/use Slang::Nogil; no strict; ident4 = 4;/;
+        is ident4, '4', 'Eval2';
+        {
+            EVAL q/use Slang::Nogil; EVAL 'use Slang::Nogil; ident5 = 5;';/;
+            is ident5, '5', 'Eval3';
+        }
+    }
 }
 
 # Arr

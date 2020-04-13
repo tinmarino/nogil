@@ -4,18 +4,17 @@ use QAST:from<NQP>;
 
 # TODO verbose from stdin
 my $verbose = 0;
-our constant NOT is export = 0;  #= Not ... used ;-)
 our constant SCA is export = 1;  #= Scalar
 our constant SUB is export = 2;  #= Function
 our constant LST is export = 3;  #= List
-our constant HSH is export = 4;  #= HAsh
+our constant HSH is export = 4;  #= Hash
 our constant SLE is export = 5;  #= Sigless
 sub log(**@args) is export {say |@args if $verbose;}
 
 #= Get Hash, Look Key, Set Key, Get Key as String
 sub gh(Mu \h) is export { nqp::findmethod(h, 'hash')(h); }
 sub lk(Mu \h, \k) is export { nqp::atkey(gh(h), k); }
-sub sk(Mu \h, \k, \v) is export { nqp::bindkey(gh(h), k, v); }
+sub sk(Mu \h, \k, Mu \v) is export { nqp::bindkey(gh(h), k, v); }
 sub str-key(Mu \h, \k) is export {
     return '' unless h;
     my $obj = lk(h, k);
@@ -23,8 +22,12 @@ sub str-key(Mu \h, \k) is export {
     return $obj.Str;
 }
 
+sub nqp-walk-hash(Mu \h, &callback) {
+}
+
 
 sub get-stack is export {
+    #= Return array with function names
     my $bt = Backtrace.new;
     my $subnames = [];
     $subnames.push($bt.list[$_].subname) for 0..10;
@@ -45,6 +48,21 @@ sub sigilize(Str $name) is export {
 role Sigilizer is export {
     #= Str -> '$'
     method Str() { return nqp::unbox_s( sigilize(callsame) ); }
+}
+
+role Positiver is export {
+    #= -1 -> * - 1
+    #= To prevent Actions from throwing a compile time error
+    method Str() {
+        my $in = callsame;
+        my @statements = [];
+        for $in.Str.split(';') {
+            @statements.push($in.subst(
+                /<?after [ ^ | '..' ] \s*> ( '-' \d+) <?before \s* $ >/,
+                { "* $0"}));
+        }
+        return @statements.join(';');
+    }
 }
 
 sub by-variable() is export {
