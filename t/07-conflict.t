@@ -2,7 +2,7 @@ use lib 'lib';
 use Slang::Nogil;
 use Test;
 
-plan 16;
+plan 18;
 
 ##################################################
 # Name conflict
@@ -17,7 +17,7 @@ is $ident, 'scalar2', 'Nosig same';
 sub ident { return 'function'; }
 is &ident(), 'function', 'Function call';
 is ident, 'function', 'Function precedence';
-# Sub and Nogil (still get
+## Sub: and Nogil (get warning)
 {
     sub ident2 { return 'function2'; }
     EVAL q/use Slang::Nogil; no strict; ident2 = 42;/;
@@ -27,6 +27,11 @@ is ident, 'function', 'Function precedence';
             .resume;
     } }
 }
+## Sub: param
+param = 71;
+sub fct(param){ return param }
+is fct(12), 12, 'Function param scope inner';
+is param, 71, 'Function param scope outer';
 
 # Eval
 {

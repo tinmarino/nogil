@@ -50,7 +50,9 @@ role NogilGrammar is export {
         | <[$@%&]>
         | <?{ by-variable }> <nogil>
     }
-    token nogil { '€' | <?> }
+    # TODO The before saves for proto method work(|) {*}
+    # but better <?before <ident>>. I don't knwo why the last is not working
+    token nogil { '€' | <?> <?before <-[()\s]>  >}
 
     # Helper
     token fails { <!> }
