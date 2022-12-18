@@ -33,7 +33,7 @@ For example, you can [interpolate](https://docs.raku.org/language/101-basics#int
 
 ### Feature: Nogil
 
-### Feature: Autovivicate scalars
+### Feature: Autovivify scalars
 
 Scalars are autodeclared to an Raku Any instance. which is augmented to get '' and 0 and default Str and Int.
 
@@ -55,9 +55,9 @@ say varname = 42;  # OUTPUTS: 42
 
 
 ## Alternatives
-> A tool is only worth by the hand that animates it (Marshal of Lattre)
+> A tool is only worth by the hand that animates it (Marshall of Lattre)
 
-1. [sigless](https://opensource.com/article/18/9/using-sigils-perl-6) variables:
+1. [sigilless](https://opensource.com/article/18/9/using-sigils-perl-6) variables:
 
 ```raku
 my \foo = $ = 41;                # a sigilless scalar variable
