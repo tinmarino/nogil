@@ -1,5 +1,7 @@
 # Slang::Nogil
 
+> This repo is deprecated, please refer to [Lizmat's version](https://github.com/lizmat/Slang-Nogil)!
+
 Raku slang permitting __Not__ to use sigils
 
 ```raku
